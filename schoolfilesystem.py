@@ -30,6 +30,9 @@ class SchoolAssessmentSystem:
             notable_observations = group[['INF 652', 'CSC 241', 'ITM 101', 'ITM 371', 'COSC 201']].idxmax(axis=1).value_counts().idxmax()
             web_data_time = group['Time Spent'].str.extract(r'(\d+)m').astype(int).sum().values[0]
             
+            # Calculate overall grade
+            overall_grade = self.calculate_grade(avg_score)
+            
             student_summary = {
                 'Name': name,
                 'Average Score': avg_score,
@@ -37,9 +40,22 @@ class SchoolAssessmentSystem:
                 'Lowest Class': lowest_class,
                 'Lowest Score': lowest_score,
                 'Notable Observation': notable_observations,
-                'Online Participation': web_data_time
+                'Online Participation': web_data_time,
+                'Overall Grade': overall_grade
             }
             self.summary_data.append(student_summary)
+
+    def calculate_grade(self, avg_score):
+        if avg_score >= 90:
+            return 'A'
+        elif avg_score >= 80:
+            return 'B'
+        elif avg_score >= 70:
+            return 'C'
+        elif avg_score >= 60:
+            return 'D'
+        else:
+            return 'F'
 
     def generate_summary(self):
         summary_report = "School Assessment Summary Report:\n\n"
@@ -47,31 +63,35 @@ class SchoolAssessmentSystem:
             # Determine if there are any courses with scores below 70
             low_score_courses = [course for course, score in student.items() if isinstance(score, int) and score < 70]
 
-            summary_report += f"1. Overall Performance of {student['Name']}:\n"
+            summary_report += f"Summary Report of {student['Name']}\n"
+            summary_report += f"1. Overall Performance:\n"
+            summary_report += f"   - Overall Grade: {student['Overall Grade']}\n"
             summary_report += f"   - Highest score: {student['Highest Score']}\n"
             summary_report += f"   - Average score: {student['Average Score']:.1f}\n"
             summary_report += f"   - Lowest score: {student['Lowest Score']}\n"
             summary_report += f"2. Subject-wise Analysis:\n"
             summary_report += f"   - Highest scoring subject: {student['Notable Observation']} with the score of {student['Highest Score']}.\n"
+            summary_report += f"   - Lowest scoring subject: {student['Lowest Class']} with the score of {student['Lowest Score']}.\n"
             summary_report += f"3. Notable Observations:\n"
             summary_report += f"   - {student['Notable Observation']} shows significant achievement.\n"
             summary_report += f"4. Web Data Insights:\n"
             summary_report += f"   - Online participation time: {student['Online Participation']} minutes\n"
-            summary_report += f"5. Recommendations:\n"
+            summary_report += f"5. Comments:\n"
 
             # If there are courses with scores below 70, recommend focusing on those courses
             if low_score_courses:
                 low_score_course_names = ', '.join(low_score_courses)
                 summary_report += f"   - Focus on improving performance in {low_score_course_names}\n"
             elif student['Lowest Score'] < 70:
-                summary_report += f"   - Focus on improving performance in {student['Lowest Class']}\n"
+                summary_report += f"   - Well Done! But focus on improving performance in {student['Lowest Class']}.\n"
             else:
-                summary_report += "   - A good grade deserves recognition.\n"
+                summary_report += "   - You did an excellent job so far!\n"
 
             summary_report += "\n"
 
         summary_report += f"Report generated on: {pd.Timestamp.now().strftime('%Y-%m-%d')}\n"
         return summary_report
+
 
 
 # Example Usage
