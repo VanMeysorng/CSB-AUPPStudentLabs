@@ -13,8 +13,8 @@ class SchoolAssessmentSystem:
         elif file_path.endswith('.xlsx'):
             self.data = pd.read_excel(file_path)
         elif file_path.endswith('.txt'):
-            with open(file_path, 'r') as file:
-                pass
+            # This section is incomplete. You should define the logic for processing .txt files.
+            pass
 
     def transfer_data(self, criteria, source_file, destination_file):
         filtered_data = self.data.query(criteria)
@@ -23,7 +23,6 @@ class SchoolAssessmentSystem:
     def analyze_content(self):
         self.summary_data = []
         for name, group in self.data.groupby('Name'):
-
             avg_score = group[['INF 652', 'CSC 241', 'ITM 101', 'ITM 371', 'COSC 201']].mean(axis=1).mean()
             highest_score = group[['INF 652', 'CSC 241', 'ITM 101', 'ITM 371', 'COSC 201']].max().max()
             lowest_class = group[['INF 652', 'CSC 241', 'ITM 101', 'ITM 371', 'COSC 201']].mean().idxmin() 
@@ -36,9 +35,7 @@ class SchoolAssessmentSystem:
             
             student_summary = {
                 'Name': name,
-                'ID': group['Id'].iloc[0], 
-                'Semester': group['Semester'].iloc[0],
-                'URL': group['URL'].iloc[0], 
+                'ID': group['Id'].iloc[0],  # Get the ID of the first row in the group
                 'Average Score': avg_score,
                 'Highest Score': highest_score,
                 'Lowest Class': lowest_class,
@@ -60,60 +57,25 @@ class SchoolAssessmentSystem:
             return 'D'
         else:
             return 'F'
-        
-    def subject_analysis(self, name):
-        student_data = self.data[self.data['Name'] == name]
-        subject_list = ['INF 652', 'CSC 241', 'ITM 101', 'ITM 371', 'COSC 201']
-        subject_grade = []
-        for subject in subject_list:
-            score = student_data[subject].iloc[0]
-            sub_grade = self.calculate_grade(score)
-            subject_grade.append(f"   - {subject}: resulted in a score of {score}, earning a grade {sub_grade}.")
-        result = '\n'.join(subject_grade)  
-        
-        return result
 
     def generate_summary(self):
         summary_report = "School Assessment Summary Report:\n\n"
         for student in self.summary_data:
-            # Determine if there are any courses with scores below 70
-            low_score_courses = [course for course, score in student.items() if isinstance(score, int) and score < 70]
-
-            summary_report += f"Student Name: {student['Name']}\n"
-            summary_report += f"Student ID: {student['ID']}\n"
-            summary_report += f"Semester Enrolled: {student['Semester']}\n"
-            summary_report += f" \n"
+            summary_report += f"*** Summary Report of {student['Name']}, ID: {student['ID']}\n"  # Include ID here
             summary_report += f"1. Overall Performance:\n"
             summary_report += f"   - Overall Grade: {student['Overall Grade']}\n"
             summary_report += f"   - Highest score: {student['Highest Score']}\n"
             summary_report += f"   - Average score: {student['Average Score']:.1f}\n"
             summary_report += f"   - Lowest score: {student['Lowest Score']}\n"
             summary_report += f"2. Subject-wise Analysis:\n"
-            summary_report += f'   + All Subjects:\n{self.subject_analysis(student["Name"])}\n'
-            summary_report += f"       * Highest scoring subject: {student['Notable Observation']} with the score of {student['Highest Score']}.\n"
-            summary_report += f"       * Lowest scoring subject: {student['Lowest Class']} with the score of {student['Lowest Score']}.\n"
-            summary_report += f"3. Notable Observations:\n"
-            summary_report += f"   - {student['Notable Observation']} shows significant achievement.\n"
-            summary_report += f"4. Web Data Insights:\n"
-            summary_report += f"   - Student Account: {student['URL']}\n"
+            summary_report += f"   - Highest scoring subject: {student['Notable Observation']} with the score of {student['Highest Score']}.\n"
+            summary_report += f"   - Lowest scoring subject: {student['Lowest Class']} with the score of {student['Lowest Score']}.\n"
+            summary_report += f"3. Web Data Insights:\n"
             summary_report += f"   - Online participation time: {student['Online Participation']} minutes\n"
-            summary_report += f"5. Comments:\n"
-
-            # If there are courses with scores below 70, recommend focusing on those courses
-            if low_score_courses:
-                low_score_course_names = ', '.join(low_score_courses)
-                summary_report += f"   - Focus on improving performance in {low_score_course_names}\n"
-            elif student['Lowest Score'] < 70:
-                summary_report += f"   - Well Done! But focus on improving performance in {student['Lowest Class']}.\n"
-            else:
-                summary_report += "   - You did an excellent job so far!\n"
-
             summary_report += "\n"
 
         summary_report += f"Report generated on: {pd.Timestamp.now().strftime('%Y-%m-%d')}\n"
         return summary_report
-
-
 
 # Example Usage
 analyzer = SchoolAssessmentSystem()
@@ -127,29 +89,3 @@ analyzer.analyze_content()
 # Generate summary
 summary = analyzer.generate_summary()
 print(summary)
-
-
-# Analyze content & display result area
-# Sample of Output:
-"""
-School Assessment Summary Report:
-
-1. Overall Performance of Student A:
-   - Average score: 85.5
-   - Top-performing class: Grade 10B
-
-2. Subject-wise Analysis:
-   - Mathematics: Improved by 10% compared to the last assessment.
-   - Science: Consistent performance across all classes.
-
-3. Notable Observations:
-   - Grade 8A shows a significant improvement in English proficiency.
-
-4. Web Data Insights:
-   - Online participation: 95% of students accessed assessment resources online.
-
-5. Recommendations:
-   - Consider additional support for Grade 9B in Mathematics.
-
-Report generated on: 2024-01-14
-"""
